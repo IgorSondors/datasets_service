@@ -16,6 +16,7 @@ def check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, p
     enlarge_f_list = [0.5, 0.45, 0.8, 0.1, 0.8, 1, 1, 0]
     concat = warped.copy()
     width = concat.shape[1]
+    boarder = 192
 
     prepared_bottom_x, prepared_bottom_y, prepared_top_x, prepared_top_y = rm_dots(bottom_x, bottom_y, top_x, top_y)
 
@@ -39,9 +40,10 @@ def check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, p
         
         warped = crop_areas(im, poligon, mid_arithmetic_h, enlarge_poligon, enlarge_h, enlarge_c, enlarge_f)
 
-        res = cv2.resize(warped, dsize=(width, 64), interpolation=cv2.INTER_CUBIC)
+        res = cv2.resize(warped, dsize=(width - 2*boarder, 32), interpolation=cv2.INTER_CUBIC)
+        res = cv2.copyMakeBorder( res, top=0, bottom=0, left=boarder, right=boarder, borderType=cv2.BORDER_CONSTANT )
         #cv2.imwrite('./concat/{}_{}_{}.jpg'.format(file_name, poligon_counter, enl_counter), res, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-        blank_image = np.zeros((5,width,3), np.uint8)
+        blank_image = np.zeros((5,width,1), np.uint8)
         concat = cv2.vconcat([concat, blank_image])
         concat = cv2.vconcat([concat, res])
 
@@ -150,7 +152,6 @@ def crop_areas2(opencv_img, poligons, poligon_height):
         if(i != 0):
             dist = math.sqrt((poligons[2][i] - poligons[2][i - 1])**2 + (poligons[3][i] - poligons[3][i - 1])**2)
         dist_cur += dist
-
     
         src.append([poligons[1][i], poligons[0][i]])
         dst.append([stripe_height, dist_cur*hor_scale*2])
@@ -159,7 +160,7 @@ def crop_areas2(opencv_img, poligons, poligon_height):
     dst_arr = np.array(dst)
     
     warped = warp_image(opencv_img, src_arr, dst_arr, int(dst[len(poligons[0]) - 1][1]), 32)
-    #warped = cv2.copyMakeBorder( warped, top=0, bottom=0, left=boarder, right=boarder, borderType=cv2.BORDER_CONSTANT )
+    warped = cv2.copyMakeBorder( warped, top=0, bottom=0, left=boarder, right=boarder, borderType=cv2.BORDER_CONSTANT )
     
     return warped
 
@@ -170,7 +171,7 @@ def crop_areas(opencv_img, poligons, poligon_height, enlarge_poligons, enlarge_p
     boarder = 192
     src = []
     dst = []
-    stripe_height = 64
+    stripe_height = 32
     dist = 0.0
     dist_cur = 0
 
@@ -290,7 +291,7 @@ def enlarge_coord(bottom_x, bottom_y, is_bottom, mid_arithmetic_h, enlarge_c, en
 def parse_coord(string):
     bottom_x, bottom_y, top_x, top_y = [], [], [], []
     number_of_polygons = int(string[3])
-    boarder_shift = 0
+    boarder_shift = 192
     string = string[4:]
 
     all_dots_num_list = string[:number_of_polygons]
@@ -332,14 +333,14 @@ def poligon_height(bottom_x, bottom_y, top_x, top_y):
 
 start_time = time.time()
 
-with open('ds_images_a_32.csv', encoding = 'ANSI') as fp:
+with open('12.csv', encoding = 'ANSI') as fp:
     line = fp.readline()
     poligon_counter = -1
     while line:
         new_line = line[:len(line)-1]
         strings = new_line.split(',')
         print( strings[0] )
-        im = cv2.imread('./real_frames/' + str(strings[0]))
+        im = cv2.imread('./real_frames/' + str(strings[0]), cv2.IMREAD_GRAYSCALE)
         file_name = strings[0][:-4]
 
         all_poligons_bottom_x, all_poligons_bottom_y, all_poligons_top_x, all_poligons_top_y = parse_coord(strings)
@@ -355,6 +356,6 @@ with open('ds_images_a_32.csv', encoding = 'ANSI') as fp:
 
             warped = crop_areas2(im, poligon, mid_arithmetic_h)
             cv2.imwrite('./stripes/{}_{}.jpg'.format(poligon_counter, file_name), warped, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-            #check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)            
+            check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)            
         line = fp.readline()        
 print('end_time = ', time.time() - start_time)
