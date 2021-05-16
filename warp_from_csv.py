@@ -56,16 +56,16 @@ def rm_dots_random(x_plus_delta, y_plus_delta, x_plus_delta_top, y_plus_delta_to
         rand_int = []
         if len(x_plus_delta) > len(x_plus_delta_top):
             for j in range(how_many_dots_to_remove):
-                #rand_int.append(random.randint(1, len(x_plus_delta)- 2))
-                rand_int.append(random.randint(1, len(x_plus_delta_top) - 2))
+                rand_int.append(random.randint(1, len(x_plus_delta)- 2))
+                #rand_int.append(random.randint(1, len(x_plus_delta_top) - 2))
             rand_int.sort(reverse = True)
             for k in rand_int:
                 del x_plus_delta[k]
                 del y_plus_delta[k]
         else:
             for j in range(how_many_dots_to_remove):
-                #rand_int.append(random.randint(1, len(x_plus_delta_top) - 2))
-                rand_int.append(random.randint(1, len(x_plus_delta)- 2))
+                rand_int.append(random.randint(1, len(x_plus_delta_top) - 2))
+                #rand_int.append(random.randint(1, len(x_plus_delta)- 2))
             rand_int.sort(reverse = True)
             for k in rand_int:
                 del x_plus_delta_top[k]
@@ -116,19 +116,17 @@ def warp_image(img, src, dst, width, height):
     grid_x, grid_y = np.mgrid[0:height, 0:width]
     #grid_z = scipy.interpolate.griddata(dst, src, (grid_x, grid_y), method='cubic')
     grid_z = scipy.interpolate.griddata(dst, src, (grid_x, grid_y), method='linear')
-    #print(grid_z)
+
     map_x = np.append([], [ar[:,1] for ar in grid_z]).reshape(height, width)
     map_y = np.append([], [ar[:,0] for ar in grid_z]).reshape(height, width)
     map_x_32 = map_x.astype('float32')
     map_y_32 = map_y.astype('float32')
+
     #warped = cv2.remap(img, map_x_32, map_y_32, cv2.INTER_CUBIC)
     warped = cv2.remap(img, map_x_32, map_y_32, cv2.INTER_LINEAR)
     return warped
 
 def crop_areas2(opencv_img, poligons, poligon_height):
-    #print('crop_areas')
-    #print('x', poligons[0][0],poligons[0][-1])
-    #print('y', poligons[1][0],poligons[1][-1])
     boarder = 192
     src = []
     dst = []
@@ -175,15 +173,13 @@ def crop_areas(opencv_img, poligons, poligon_height, enlarge_poligons, enlarge_p
     stripe_height = 64
     dist = 0.0
     dist_cur = 0
-    #enlarge_poligon_height = mid_arithmetic_h * (1+ enlarge_c + enlarge_f) 
+
     hor_scale = float(stripe_height/poligon_height)
     enlarge_hor_scale = float(stripe_height/enlarge_poligon_height)
 
     part_of_height1 = enlarge_hor_scale * poligon_height*enlarge_c
     part_of_height2 = enlarge_hor_scale * poligon_height*(enlarge_f)
 
-    #print('part_of_height1 = ', part_of_height1,',', 'enlarge_c = ', enlarge_c)
-    #print('part_of_height2 = ', part_of_height2,',', 'enlarge_f = ', enlarge_f)
     # xu - x upper, xl - x lower
     for i in range(len(enlarge_poligons[2])):
         if(i != 0):
@@ -359,8 +355,6 @@ with open('ds_images_a_32.csv', encoding = 'ANSI') as fp:
 
             warped = crop_areas2(im, poligon, mid_arithmetic_h)
             cv2.imwrite('./stripes/{}_{}.jpg'.format(poligon_counter, file_name), warped, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-            #check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)
-            
-        line = fp.readline()
-        
+            #check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)            
+        line = fp.readline()        
 print('end_time = ', time.time() - start_time)
