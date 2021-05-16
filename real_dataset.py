@@ -12,6 +12,9 @@ import time
 start_time = time.time()
 
 def top_bottom_dots(point_x, point_y, edge_x, edge_y):
+    """
+    Distinguish top and down dots by curved lines length and average sum of oY coordinates
+    """
     if point_x[0] in edge_x:
         is_good_rect = True
 
@@ -67,6 +70,9 @@ def top_bottom_dots(point_x, point_y, edge_x, edge_y):
     return bottom_x, bottom_y, top_x, top_y, is_good_rect
 
 def find_bbox_coord(point_x, point_y):
+    """
+    Find bbox coordinates and exclude bad poligons
+    """
     is_good_rect = True
     bottom_x, bottom_y = [], []
     top_x, top_y = [], []
@@ -155,6 +161,9 @@ def Euclidian_distance_sorting(bottom_x, bottom_y, lowest_point):
     return bottom_x, bottom_y
 
 def recalculate_top(bottom_x, bottom_y, top_x, top_y):
+    """
+    New top points corresponding to bottom points with normal shift
+    """
     top_lines = []
     bottom_lines = []
     bottom_normal_lines = []
@@ -206,37 +215,10 @@ def recalculate_top(bottom_x, bottom_y, top_x, top_y):
     assert len(new_top_x) == len(bottom_x)
     return new_top_x, new_top_y
 
-def kx_plus_b(bottom_x, bottom_y):
-    x_plus_delta = []
-    y_plus_delta = []
-    pixel_step = 1
-    poligon_dots = 0
-    for i in range(len(bottom_x) - 1):
-        next_x = int(bottom_x[i])
-        next_y = bottom_y[i]
-        x_plus_delta.append(next_x)
-        y_plus_delta.append(round(next_y,1))
-        poligon_dots = poligon_dots + 1
-        try:
-            k = (bottom_y[i] - bottom_y[i+1])/(bottom_x[i] - bottom_x[i+1])
-            b = bottom_y[i] - k * bottom_x[i]
-            dots_between_edges = int((((bottom_x[i+1] - bottom_x[i])**2 + (bottom_y[i+1] - bottom_y[i])**2)**0.5) / pixel_step)
-            X_step = (bottom_x[i+1] - bottom_x[i]) / dots_between_edges
-            for j in range(dots_between_edges):
-                next_x = next_x + X_step
-                next_y = k * next_x + b
-                x_plus_delta.append(int(next_x))
-                y_plus_delta.append(round(next_y,1))
-            poligon_dots = poligon_dots + dots_between_edges
-        except:
-            print('Расстояние между точками 0 пикселей! Пропуск точки')
-
-    x_plus_delta.append(int(bottom_x[-1]))
-    y_plus_delta.append(round(bottom_y[-1],1))
-    poligon_dots = poligon_dots + 1
-    return poligon_dots, x_plus_delta, y_plus_delta
-
 def recalculate_top2(bottom_x, bottom_y, top_x, top_y):
+    """
+    Find new top points by Euclidian distance to bottom points
+    """
     print('recalculate_top2')
     new_top_x = [top_x[0]]
     new_top_y = [top_y[0]]
@@ -266,6 +248,39 @@ def recalculate_top2(bottom_x, bottom_y, top_x, top_y):
     assert len(new_top_x) == len(bottom_x)
     return new_top_x, new_top_y
 
+def kx_plus_b(bottom_x, bottom_y):
+    """
+    Fill space between dots with one pix step new dots on the corresponding line
+    """
+    x_plus_delta = []
+    y_plus_delta = []
+    pixel_step = 1
+    poligon_dots = 0
+    for i in range(len(bottom_x) - 1):
+        next_x = int(bottom_x[i])
+        next_y = bottom_y[i]
+        x_plus_delta.append(next_x)
+        y_plus_delta.append(round(next_y,1))
+        poligon_dots = poligon_dots + 1
+        try:
+            k = (bottom_y[i] - bottom_y[i+1])/(bottom_x[i] - bottom_x[i+1])
+            b = bottom_y[i] - k * bottom_x[i]
+            dots_between_edges = int((((bottom_x[i+1] - bottom_x[i])**2 + (bottom_y[i+1] - bottom_y[i])**2)**0.5) / pixel_step)
+            X_step = (bottom_x[i+1] - bottom_x[i]) / dots_between_edges
+            for j in range(dots_between_edges):
+                next_x = next_x + X_step
+                next_y = k * next_x + b
+                x_plus_delta.append(int(next_x))
+                y_plus_delta.append(round(next_y,1))
+            poligon_dots = poligon_dots + dots_between_edges
+        except:
+            print('Расстояние между точками 0 пикселей! Пропуск точки')
+
+    x_plus_delta.append(int(bottom_x[-1]))
+    y_plus_delta.append(round(bottom_y[-1],1))
+    poligon_dots = poligon_dots + 1
+    return poligon_dots, x_plus_delta, y_plus_delta
+
 def draw_black_rect(im, point_pairs):
     cnt = []
     for i in range(len(point_pairs) - 2, -2, -2):
@@ -277,6 +292,9 @@ def draw_black_rect(im, point_pairs):
     return black
 
 def find_4_dots(point_x, point_y):
+    """
+    Find 4 edge dots by cosinus theoreme
+    """
     i = 0
     curve = []  #c**2 = a**2 + b**2 - 2ab*cos_alpha
     
@@ -336,7 +354,10 @@ def find_4_dots(point_x, point_y):
         
     return edge_x, edge_y
 
-def top_down_points(im, bottom_x, bottom_y, top_x, top_y):
+def draw_points(im, bottom_x, bottom_y, top_x, top_y):
+    """
+    Debugging tool for top and bottom checking
+    """
     # Radius of circle
     radius = 1
     thickness = 5

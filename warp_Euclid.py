@@ -15,7 +15,7 @@ start_time = time.time()
 def draw_points(im, poligon_counter, bottom_x, bottom_y, top_x, top_y):
     # Radius of circle
     radius = 1
-    thickness = 10
+    thickness = 2
     for i in range(len(bottom_x)):
         x, y = bottom_x[i], bottom_y[i]
         center_coordinates = (int(x), int(y))
@@ -351,18 +351,22 @@ def enlarge_coord(bottom_x, bottom_y, is_bottom, mid_arithmetic_h):
 
         if is_bottom == True:
             new_bottom_x.append(s[0] + d_x_f)
-            new_bottom_x.append(s[3] + d_x_f)
             new_bottom_y.append(s[1] + d_y_f)
-            new_bottom_y.append(s[4] + d_y_f)
         else: # top
             new_bottom_x.append(s[0]  - d_x_c)
-            new_bottom_x.append(s[3]  - d_x_c)
             new_bottom_y.append(s[1]  - d_y_c)
-            new_bottom_y.append(s[4]  - d_y_c)
-
+             
+    last_dot = coord_source[-1]
+    if is_bottom == True:
+        new_bottom_x.append(last_dot[3] + d_x_f)
+        new_bottom_y.append(last_dot[4] + d_y_f)
+    else: # top
+        new_bottom_x.append(last_dot[3]  - d_x_c)
+        new_bottom_y.append(last_dot[4]  - d_y_c)
+ 
     return new_bottom_x, new_bottom_y, enlarge_c, enlarge_f
 
-with open('input_total.txt', encoding = 'utf8') as fp:
+with open('input.txt', encoding = 'utf8') as fp:
     lines = fp.readlines()
     poligon_counter = -1
 
@@ -370,7 +374,7 @@ with open('input_total.txt', encoding = 'utf8') as fp:
         js_line = json.loads(line)
         file_name = js_line['file'].split('/')
         file_name = file_name[-1].split('?')
-        file_path = './dataset_ocr/' + file_name[0]
+        file_path = file_name[0]
         print(n, file_name[0])
         im = cv2.imread(file_path)
         if im is None:
