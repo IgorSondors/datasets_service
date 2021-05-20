@@ -288,6 +288,60 @@ def enlarge_coord(bottom_x, bottom_y, is_bottom, mid_arithmetic_h, enlarge_c, en
 
     return new_bottom_x, new_bottom_y
 
+def enlarge_coord2(bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, enlarge_c, enlarge_f):
+    new_bottom_x, new_bottom_y = [], []
+    new_top_x, new_top_y = [], []
+
+    for i in range(len(bottom_x)):
+        x1 = bottom_x[i]
+        y1 = bottom_y[i]
+        x2 = top_x[i]
+        y2 = top_y[i]
+
+        if x1 != x2:
+            k = (y1 - y2)/(x1 - x2)
+            b = y1 - x1 * k
+
+            if y1 > y2: # координата Y дна больше верхушки
+                if k > 0:
+                    plus_or_minus = 1
+                else:
+                    plus_or_minus = -1
+            else: # координата Y дна меньше верхушки
+                if k > 0:
+                    plus_or_minus = -1
+                else:
+                    plus_or_minus = 1
+
+            delta_x_bottom = plus_or_minus * (mid_arithmetic_h * enlarge_f)/(k**2 + 1)**0.5
+            delta_y_bottom = k * delta_x_bottom
+
+            if y1 > y2:
+                if k > 0:
+                    plus_or_minus = -1
+                else:
+                    plus_or_minus = 1
+            else:
+                if k > 0:
+                    plus_or_minus = 1
+                else:
+                    plus_or_minus = -1
+
+            delta_x_top = plus_or_minus * (mid_arithmetic_h * enlarge_c)/(k**2 + 1)**0.5
+            delta_y_top = k * delta_x_top # или пересчет через kx+b!
+
+            new_bottom_x.append(x1+delta_x_bottom)
+            new_bottom_y.append(y1+delta_y_bottom)
+            new_top_x.append(x2+delta_x_top)
+            new_top_y.append(y2+delta_y_top)
+        else:
+            new_bottom_x.append(x1)
+            new_bottom_y.append(y1 + mid_arithmetic_h * enlarge_f)
+            new_top_x.append(x2)
+            new_top_y.append(y2 - mid_arithmetic_h * enlarge_c)
+
+    return new_bottom_x, new_bottom_y, new_top_x, new_top_y
+
 def parse_coord(string):
     bottom_x, bottom_y, top_x, top_y = [], [], [], []
     number_of_polygons = int(string[3])
@@ -366,13 +420,19 @@ def one_process(process, list_result_files):
             for i in range(len(all_poligons_bottom_x)): 
                 poligon_counter = poligon_counter + 1
                 print(poligon_counter)     
+
                 bottom_x, bottom_y, top_x, top_y = all_poligons_bottom_x[i], all_poligons_bottom_y[i], all_poligons_top_x[i], all_poligons_top_y[i]
-
                 mid_arithmetic_h = poligon_height(bottom_x, bottom_y, top_x, top_y) 
-
                 poligon = [bottom_x, bottom_y, top_x, top_y]
 
-                warped = crop_areas2(im, poligon, mid_arithmetic_h)
+                enlarge_c, enlarge_f = 0.5, 0.5
+                enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y = enlarge_coord2(bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, enlarge_c, enlarge_f)
+                enlarge_h = mid_arithmetic_h * (1 + enlarge_c + enlarge_f)  
+                enlarge_poligon = [enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y]
+
+
+
+                warped = crop_areas(im, poligon, mid_arithmetic_h, enlarge_poligon, enlarge_h, enlarge_c, enlarge_f)
                 cv2.imwrite('./stripes/{}_{}.jpg'.format(file_name, poligon_counter), warped, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                 #check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)         
