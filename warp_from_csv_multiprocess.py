@@ -175,9 +175,10 @@ def crop_areas(opencv_img, poligons, poligon_height, enlarge_poligons, enlarge_p
     dist = 0.0
     dist_cur = 0
 
-    hor_scale = float(stripe_height/poligon_height)
+    #hor_scale = float(stripe_height/poligon_height)
     enlarge_hor_scale = float(stripe_height/enlarge_poligon_height)
-
+    hor_scale = enlarge_hor_scale
+    
     part_of_height1 = enlarge_hor_scale * poligon_height*enlarge_c
     part_of_height2 = enlarge_hor_scale * poligon_height*enlarge_f
 
