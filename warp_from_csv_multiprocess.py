@@ -400,6 +400,9 @@ def poligon_height(bottom_x, bottom_y, top_x, top_y):
     #print('calculate_h_time = ', time.time() - calculate_h_time)
     return mid_arithmetic_h
 
+def random_03_08():
+    return (random.randint(30, 80)) / 100, (random.randint(30, 80)) / 100
+
 def one_process(process, list_result_files):
     start_time = time.time()
     bd_old = 'ds_images_to2.csv'
@@ -410,33 +413,40 @@ def one_process(process, list_result_files):
         while line:
             new_line = line[:len(line)-1]
             strings = new_line.split(',')
-            print( strings[0] )
-            print(bd)
+            #print( strings[0] )
+            #print(bd)
             poligon_counter = -1
             im = cv2.imread('./real_frames/' + str(strings[0]), cv2.IMREAD_GRAYSCALE)
+            if im is None:
+                print(strings[0])
+                continue
             file_name = strings[0][:-4]
 
             all_poligons_bottom_x, all_poligons_bottom_y, all_poligons_top_x, all_poligons_top_y = parse_coord(strings)
 
             for i in range(len(all_poligons_bottom_x)): 
                 poligon_counter = poligon_counter + 1
-                print(poligon_counter)     
+                #print(poligon_counter)     
 
                 bottom_x, bottom_y, top_x, top_y = all_poligons_bottom_x[i], all_poligons_bottom_y[i], all_poligons_top_x[i], all_poligons_top_y[i]
                 mid_arithmetic_h = poligon_height(bottom_x, bottom_y, top_x, top_y) 
                 poligon = [bottom_x, bottom_y, top_x, top_y]
+                enlarge_counter = -1
+                for i in range(4):
+                    #enlarge_c, enlarge_f = 0.5, 0.5
+                    enlarge_counter = enlarge_counter + 1
+                    enlarge_c, enlarge_f = random_03_08()
+                    #print("enlarge_c, enlarge_f = ", enlarge_c, enlarge_f)
+                    enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y = enlarge_coord2(bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, enlarge_c, enlarge_f)
+                    enlarge_h = mid_arithmetic_h * (1 + enlarge_c + enlarge_f)  
+                    enlarge_poligon = [enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y]
 
-                enlarge_c, enlarge_f = 0.5, 0.5
-                enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y = enlarge_coord2(bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, enlarge_c, enlarge_f)
-                enlarge_h = mid_arithmetic_h * (1 + enlarge_c + enlarge_f)  
-                enlarge_poligon = [enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y]
 
 
+                    warped = crop_areas(im, poligon, mid_arithmetic_h, enlarge_poligon, enlarge_h, enlarge_c, enlarge_f)
+                    cv2.imwrite('./stripes/{}_{}_{}.jpg'.format(file_name, poligon_counter, enlarge_counter), warped, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
-                warped = crop_areas(im, poligon, mid_arithmetic_h, enlarge_poligon, enlarge_h, enlarge_c, enlarge_f)
-                cv2.imwrite('./stripes/{}_{}.jpg'.format(file_name, poligon_counter), warped, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-
-                #check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)         
+                    #check_oX_shift(warped, bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, poligon_counter)         
             line = fp.readline()        
     print('end_time = ', time.time() - start_time)
 
