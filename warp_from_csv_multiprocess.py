@@ -419,6 +419,7 @@ def one_process(process, list_result_files):
             im = cv2.imread('./real_frames/' + str(strings[0]), cv2.IMREAD_GRAYSCALE)
             if im is None:
                 print(strings[0])
+                line = fp.readline()
                 continue
             file_name = strings[0][:-4]
 
