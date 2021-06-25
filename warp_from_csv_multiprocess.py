@@ -432,7 +432,7 @@ def one_process(process, list_result_files):
                 bottom_x, bottom_y, top_x, top_y = all_poligons_bottom_x[i], all_poligons_bottom_y[i], all_poligons_top_x[i], all_poligons_top_y[i]
                 mid_arithmetic_h = poligon_height(bottom_x, bottom_y, top_x, top_y) 
                 poligon = [bottom_x, bottom_y, top_x, top_y]
-                enlarge_counter = -1
+                enlarge_counter = 3
                 for i in range(4):
                     #enlarge_c, enlarge_f = 0.5, 0.5
                     enlarge_counter = enlarge_counter + 1
@@ -441,8 +441,6 @@ def one_process(process, list_result_files):
                     enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y = enlarge_coord2(bottom_x, bottom_y, top_x, top_y, mid_arithmetic_h, enlarge_c, enlarge_f)
                     enlarge_h = mid_arithmetic_h * (1 + enlarge_c + enlarge_f)  
                     enlarge_poligon = [enlarge_bottom_x, enlarge_bottom_y, enlarge_top_x, enlarge_top_y]
-
-
 
                     warped = crop_areas(im, poligon, mid_arithmetic_h, enlarge_poligon, enlarge_h, enlarge_c, enlarge_f)
                     cv2.imwrite('./stripes/{}_{}_{}.jpg'.format(file_name, poligon_counter, enlarge_counter), warped, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
